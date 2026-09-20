@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Secrets. `.env` holds live provider keys. Never commit it.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Personal data.
+#
+# By default none of this is even inside the repo — it lives in ~/.jarvis/ so a
+# careless `git add -A` cannot publish your life. These patterns are the second
+# line of defence for when JARVIS_HOME is pointed inside the tree (useful when
+# working on the memory layer itself).
+# ---------------------------------------------------------------------------
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+audit.jsonl
+sessions/
+memory/
+vault/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store

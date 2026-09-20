@@ -1,0 +1,55 @@
+[project]
+name = "jarvis"
+version = "0.0.1"
+description = "A personal Jarvis: one main agent with access to your personal context, delegating to capability-scoped subagents."
+readme = "README.md"
+requires-python = ">=3.12"
+
+# The brain is Tau's portable agent harness, embedded as a library (never its CLI).
+# Pinned exactly: tau is young and self-described as a teaching project, so an
+# upgrade should be a deliberate, one-file diff (jarvis/brain.py is the only importer).
+dependencies = [
+  "tau-ai==0.4.4",
+  "pydantic>=2.11",
+  "python-dotenv>=1.0.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["jarvis"]
+
+[project.scripts]
+jarvis = "jarvis.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.9",
+  "mypy>=1.13",
+]
+
+# Lint standard mirrors the settings the Tau and Pi trees use: ruff, line-length
+# 120, and a deliberately small rule set rather than a maximal one.
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["jarvis"]
+ignore_missing_imports = true
