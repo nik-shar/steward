@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from datetime import datetime, tzinfo
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dotenv import load_dotenv
 
@@ -123,6 +125,28 @@ class Settings:
     provider: ProviderSettings
     max_turns: int
     consent_allowlist: frozenset[str]
+    #: IANA name, or None for the machine's own zone.
+    timezone: str | None = None
+
+    def tz(self) -> tzinfo:
+        """The one timezone every clock reading uses.
+
+        Unset means the machine's own zone — correct for a personal assistant on your
+        laptop, wrong for one on a server, so set `JARVIS_TIMEZONE` there. Every slot
+        label in the calendar is a wall-clock reading in this zone.
+        """
+        if not self.timezone:
+            local = datetime.now().astimezone().tzinfo
+            if local is None:  # pragma: no cover - only on an unconfigured system
+                raise ConfigError("cannot determine the local timezone; set JARVIS_TIMEZONE")
+            return local
+        try:
+            return ZoneInfo(self.timezone)
+        except ZoneInfoNotFoundError as exc:
+            raise ConfigError(
+                f"JARVIS_TIMEZONE {self.timezone!r} is not a known IANA timezone "
+                "(for example Asia/Kolkata or Europe/London)"
+            ) from exc
 
     @classmethod
     def load(cls) -> Settings:
@@ -139,4 +163,5 @@ class Settings:
             provider=ProviderSettings.from_env(),
             max_turns=max_turns,
             consent_allowlist=_parse_allowlist(os.environ.get("JARVIS_CONSENT_ALLOWLIST")),
+            timezone=(os.environ.get("JARVIS_TIMEZONE") or "").strip() or None,
         )

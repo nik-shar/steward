@@ -67,7 +67,7 @@ uv run jarvis --doctor    # what is wired, without spending a token
 uv run jarvis "hello"     # one turn
 uv run jarvis             # interactive session
 uv run jarvis --audit     # what it actually did
-uv run pytest             # 114 tests, zero tokens
+uv run pytest             # 263 tests, zero tokens
 ```
 
 `jarvis --doctor` is the first thing to run after any config change: it prints the
@@ -82,11 +82,26 @@ local server is an env change, not a code change.
 
 - [x] **M0** — project grounded; `.env` gitignored, data lives in `~/.jarvis/`
 - [x] **M1** — spine: brain + memory + consent + audit + `delegate()`
-- [ ] **M2** — first real pack (`calendar`) + `notes`
+- [x] **M2** — `calendar` + `notes` packs; the first writes to the real world
 - [ ] **M3** — promote a pack to a real child harness
 - [ ] **M4** — recall quality + identity from markdown
 - [ ] **M5** — interfaces (web, Telegram)
 - [ ] **M6** — proactive scheduler
+
+### M2 — what now exists
+
+Thirteen tools across three packs, and `--doctor` prints every one with its scope:
+
+| Pack | Reads | Writes (gated) |
+|---|---|---|
+| `core` | `get_profile`, `recall_memory`, `delegate` | — |
+| `calendar` | `get_day`, `find_availability` | `place_block`, `remove_block` |
+| `notes` | `list_notes`, `read_note`, `search_notes` | `append_note` |
+
+`test_registry.py::test_the_exact_set_of_world_writing_tools` asserts that set is
+exactly `{place_block, remove_block, append_note}` — so adding a capability that
+touches the world fails a test until someone decides, consciously, that it needs
+consent.
 
 ### What M1 verified
 
@@ -98,6 +113,29 @@ local server is an env change, not a code change.
 - Three safety properties are asserted against the **real** loop, not mocks:
   a denied write never reaches its handler; a write inside a **subagent** is gated
   the same way; and a failed model call is **visible** rather than silent.
+
+### What M2 verified
+
+- A **live booking**, end to end: the model called `find_availability` for tomorrow
+  afternoon, was shown `12:00–17:00 (5h)`, called `place_block` — the consent prompt
+  appeared, was answered `y`, and slots 30–31 of 2026-09-21 were written with
+  `consent place_block allowed (approved by you)` in the audit log.
+- A **declined** booking writes nothing and fails only that call, not the turn.
+- A **one-shot** run has no consent channel, so it refuses to book at all.
+
+### Two deliberate limits
+
+**The calendar is a 30-minute grid.** A block must start on `:00` or `:30` and last
+a multiple of 30 minutes, and it cannot cross midnight. That is a real constraint,
+so it is enforced with an error that names the nearest valid times rather than being
+rounded away silently. Widening it later means changing the schema, not the parser.
+
+**Note paths are untrusted input.** They come from the model, so every path is
+resolved *after* symlinks and checked against the vault root.
+`test_notes_containment.py` attacks this directly: `..`, absolute paths, and a
+symlinked directory planted inside the vault. The last one asserts that nothing was
+written outside — because "it raised an error" is not the same as "your files are
+safe".
 
 ### The trap this design exists to avoid
 

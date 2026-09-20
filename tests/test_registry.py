@@ -37,26 +37,46 @@ def _tool(name: str, scope: Scope, pack: str = "test") -> ToolSpec:
 def test_default_packs_mount() -> None:
     mounted = mount(default_packs())
 
-    assert mounted.packs == ("core",)
-    names = [tool.name for tool in mounted.tools]
-    assert set(names) == {
+    assert mounted.packs == ("core", "calendar", "notes")
+    names = {tool.name for tool in mounted.tools}
+    assert names == {
+        # core — identity, memory, delegation
         "get_profile",
         "recall_memory",
         "remember",
         "set_profile_fact",
         "delegate",
+        # calendar — reads then writes
+        "get_day",
+        "find_availability",
+        "place_block",
+        "remove_block",
+        # notes — reads then one append
+        "list_notes",
+        "read_note",
+        "search_notes",
+        "append_note",
     }
     # The registry is built from the very tools on offer, so it cannot drift.
-    assert mounted.scopes.missing_scope(names) == []
+    assert mounted.scopes.missing_scope(list(names)) == []
 
 
-def test_core_has_no_write_tools() -> None:
-    """Nothing in the core pack touches the outside world, so nothing prompts.
+def test_the_exact_set_of_world_writing_tools() -> None:
+    """An inventory of every capability that can change something outside Jarvis.
 
-    If this ever fails, someone has added a capability that changes things without
-    deciding it needs consent.
+    This is the test to read when you want to know what Jarvis is *allowed to do*.
+    Adding a write tool anywhere should fail here, loudly, and make whoever added it
+    decide consciously that it needs consent.
     """
     mounted = mount(default_packs())
+    writes = {capability.tool for capability in mounted.scopes.writes()}
+
+    assert writes == {"place_block", "remove_block", "append_note"}
+
+
+def test_core_alone_never_touches_the_outside_world() -> None:
+    """Core writes only to Jarvis's own memory, so mounting it alone prompts for nothing."""
+    mounted = mount([core_pack()])
     assert mounted.scopes.writes() == []
 
 

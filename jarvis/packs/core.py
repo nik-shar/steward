@@ -268,8 +268,3 @@ def core_pack(subagents: Mapping[str, SubagentSpec] | None = None) -> Capability
         tools=(*MEMORY_TOOLS, delegate_tool(subagents)),
         guidelines=GUIDELINES,
     )
-
-
-def default_packs() -> tuple[CapabilityPack, ...]:
-    """Packs mounted for a normal run. Later milestones append to this."""
-    return (core_pack(),)

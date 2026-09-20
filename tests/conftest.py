@@ -25,7 +25,7 @@ from tau_ai.events import (
 from jarvis.config import Paths, ProviderSettings, Settings
 from jarvis.memory.dna import DnaMemory
 from jarvis.memory.store import MemoryStore
-from jarvis.packs.core import default_packs
+from jarvis.packs import default_packs
 from jarvis.policy.audit import AuditLog
 from jarvis.policy.consent import ConsentGate
 from jarvis.policy.scopes import ScopeRegistry
@@ -149,6 +149,23 @@ def settings_factory(tmp_path: Path):
         return settings_for(tmp_path, **kwargs)
 
     return build
+
+
+@pytest.fixture
+def vault_ctx(tmp_path: Path, store: MemoryStore, dna: DnaMemory, audit: AuditLog, mounted: Mounted):
+    """A tool context whose settings point at a temp vault, for the notes pack.
+
+    The notes tools read the vault path out of settings, so unlike the core pack they
+    need a real `Settings` rather than `None`.
+    """
+    return ToolContext(
+        settings=settings_for(tmp_path),
+        store=store,
+        dna=dna,
+        audit=audit,
+        scopes=mounted.scopes,
+        session_id="test-session",
+    )
 
 
 @pytest.fixture

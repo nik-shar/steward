@@ -145,8 +145,13 @@ async def test_status_reports_the_wiring(settings_factory) -> None:
         await jarvis.aclose()
 
     assert status["model"] == "test-model"
-    assert status["packs"] == ["core"]
+    assert status["packs"] == ["core", "calendar", "notes"]
+
     scopes = {tool["name"]: tool["scope"] for tool in status["tools"]}
     assert scopes["remember"] == "internal"
     assert scopes["recall_memory"] == "read"
-    assert status["consent_required"] == []
+    assert scopes["get_day"] == "read"
+    assert scopes["place_block"] == "write"
+
+    # Everything that can change the world, and nothing else.
+    assert set(status["consent_required"]) == {"place_block", "remove_block", "append_note"}
