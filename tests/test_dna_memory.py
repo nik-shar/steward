@@ -1,7 +1,7 @@
 """Organic memory: the two rules that make it trustworthy.
 
 Rule 1 — append-only with supersede: a correction never erases what was previously
-believed, so you can always read back what Jarvis used to think and when it changed.
+believed, so you can always read back what Steward used to think and when it changed.
 
 Rule 2 — ceilings enforced in code: an inferred memory cannot be written at the
 confidence of a stated one, and the refusal is an exception rather than a clamp.
@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from jarvis.memory.dna import (
+from steward.memory.dna import (
     CONFIDENCE_CEILINGS,
     ConfidenceCeilingError,
     DnaError,

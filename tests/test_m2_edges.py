@@ -12,9 +12,9 @@ from pathlib import Path
 
 from tau_ai import FakeProvider
 
-from jarvis.brain import Jarvis
-from jarvis.memory.store import MemoryStore
-from jarvis.packs.calendar.store import DaySlots
+from steward.brain import Steward
+from steward.memory.store import MemoryStore
+from steward.packs.calendar.store import DaySlots
 
 
 async def _allow(question: str, arguments: object) -> bool:
@@ -34,14 +34,14 @@ async def test_a_one_shot_run_refuses_to_book_without_asking(settings_factory, s
             streams.text("I need your approval for that."),
         ]
     )
-    jarvis = Jarvis(settings_factory(), provider=provider, resume=False)
+    steward = Steward(settings_factory(), provider=provider, resume=False)
     try:
-        async for _event in jarvis.ask("block two hours on Thursday"):
+        async for _event in steward.ask("block two hours on Thursday"):
             pass
-        rows = jarvis.store.query("SELECT 1 FROM day_slots")
-        records = jarvis.audit.read()
+        rows = steward.store.query("SELECT 1 FROM day_slots")
+        records = steward.audit.read()
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert rows == []
     verdicts = [r for r in records if r.kind == "consent" and r.tool == "place_block"]
@@ -66,14 +66,14 @@ async def test_a_collision_is_reported_rather_than_worked_around(settings_factor
             streams.text("I could not book that one."),
         ]
     )
-    jarvis = Jarvis(settings, provider=provider, prompter=_allow, resume=False)
+    steward = Steward(settings, provider=provider, prompter=_allow, resume=False)
     try:
-        async for _event in jarvis.ask("book a call at 3"):
+        async for _event in steward.ask("book a call at 3"):
             pass
         context = _context(provider)
-        labels = {row["label"] for row in jarvis.store.query("SELECT DISTINCT label FROM day_slots")}
+        labels = {row["label"] for row in steward.store.query("SELECT DISTINCT label FROM day_slots")}
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert "overlaps" in context, "the model was not told why it failed"
     assert labels == {"deep work"}, "the declined booking partially wrote"
@@ -91,12 +91,12 @@ async def test_the_notes_pack_lands_a_thought_in_the_vault(settings_factory, str
             streams.text("Noted in your daily note."),
         ]
     )
-    jarvis = Jarvis(settings, provider=provider, prompter=_allow, resume=False)
+    steward = Steward(settings, provider=provider, prompter=_allow, resume=False)
     try:
-        async for _event in jarvis.ask("note that I booked it"):
+        async for _event in steward.ask("note that I booked it"):
             pass
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     written = Path(settings.paths.vault) / "Daily Notes" / "today.md"
     assert written.is_file()
@@ -115,11 +115,11 @@ async def test_a_declined_vault_write_creates_no_file(settings_factory, streams)
             streams.text("I left it out of the vault."),
         ]
     )
-    jarvis = Jarvis(settings, provider=provider, prompter=deny, resume=False)
+    steward = Steward(settings, provider=provider, prompter=deny, resume=False)
     try:
-        async for _event in jarvis.ask("note that"):
+        async for _event in steward.ask("note that"):
             pass
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert not (Path(settings.paths.vault) / "Daily Notes" / "today.md").exists()

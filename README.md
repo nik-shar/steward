@@ -1,7 +1,7 @@
-# Jarvis
+# Steward
 
-A personal Jarvis: **one main agent that owns everything about *you*** — identity,
-memory, and consent — and delegates the work to capability-scoped subagents.
+**Steward** is one main agent that owns everything about *you* — identity, memory,
+and consent — and delegates the work to capability-scoped subagents.
 
 Python only. One process. No server to run.
 
@@ -32,7 +32,7 @@ The conversation loop, provider adapters, session persistence and compaction are
 **Tau's** (`tau_agent`), embedded as a library — never its CLI. Verified against
 `tau-ai` 0.4.4:
 
-- `AgentHarnessConfig.tools` — Jarvis supplies its own tools
+- `AgentHarnessConfig.tools` — Steward supplies its own tools
 - `before_tool_call` — the consent gate (`ToolCall -> (allowed, reason)`)
 - `after_tool_call` — the audit hook
 - `FakeProvider` — the whole spine is testable with **zero tokens**
@@ -40,13 +40,13 @@ The conversation loop, provider adapters, session persistence and compaction are
 Tau deliberately does **not** ship subagents, MCP, personal-data tools or memory.
 Those are precisely what this repo builds.
 
-> `jarvis/brain.py` is the **only** module that imports `tau_agent`. Tau is young;
+> `steward/brain.py` is the **only** module that imports `tau_agent`. Tau is young;
 > when its API moves, one file changes.
 
 ## Layout
 
 ```
-jarvis/
+steward/
 ├── config.py        paths + provider settings (no Tau import)
 ├── brain.py         the Tau boundary — the only tau_agent importer
 ├── identity/        persona.md + guidelines.md → the system prompt
@@ -63,24 +63,24 @@ jarvis/
 ```bash
 uv sync
 cp .env.example .env      # then fill in your provider key
-uv run jarvis --doctor    # what is wired, without spending a token
-uv run jarvis "hello"     # one turn
-uv run jarvis             # interactive session
-uv run jarvis --audit     # what it actually did
-uv run pytest             # 263 tests, zero tokens
+uv run steward --doctor  # what is wired, without spending a token
+uv run steward "hello"   # one turn
+uv run steward           # interactive session
+uv run steward --audit   # what it actually did
+uv run pytest            # 318 tests, zero tokens
 ```
 
-`jarvis --doctor` is the first thing to run after any config change: it prints the
+`steward --doctor` is the first thing to run after any config change: it prints the
 model, endpoint, data paths, and every mounted tool with its **scope**, so a
 capability can never be added without you seeing what it is allowed to do.
 
-The provider is any OpenAI-compatible endpoint — `JARVIS_API_KEY`,
-`JARVIS_BASE_URL`, `JARVIS_MODEL`. Switching between Nebius, OpenRouter, or a
+The provider is any OpenAI-compatible endpoint — `STEWARD_API_KEY`,
+`STEWARD_BASE_URL`, `STEWARD_MODEL`. Switching between Nebius, OpenRouter, or a
 local server is an env change, not a code change.
 
 ## Status
 
-- [x] **M0** — project grounded; `.env` gitignored, data lives in `~/.jarvis/`
+- [x] **M0** — project grounded; `.env` gitignored, data lives in `~/.steward/`
 - [x] **M1** — spine: brain + memory + consent + audit + `delegate()`
 - [x] **M2** — `calendar` + `notes` packs; the first writes to the real world
 - [ ] **M3** — promote a pack to a real child harness

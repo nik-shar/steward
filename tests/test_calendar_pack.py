@@ -10,7 +10,7 @@ the alternative.
 
 from __future__ import annotations
 
-from jarvis.packs.calendar.tools import get_day, place_block, remove_block
+from steward.packs.calendar.tools import get_day, place_block, remove_block
 
 DAY = "2026-09-24"  # a Thursday
 

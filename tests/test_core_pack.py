@@ -12,8 +12,8 @@ rather than through a model. The properties that matter:
 
 from __future__ import annotations
 
-from jarvis.packs.core import get_profile, recall_memory, remember, set_profile_fact
-from jarvis.tools.spec import ToolContext
+from steward.packs.core import get_profile, recall_memory, remember, set_profile_fact
+from steward.tools.spec import ToolContext
 
 # -- the cold start ------------------------------------------------------------
 

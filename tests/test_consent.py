@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jarvis.policy.audit import AuditLog
-from jarvis.policy.consent import ConsentDecision, ConsentGate, describe_call, redact
-from jarvis.policy.scopes import Scope, ScopeRegistry
+from steward.policy.audit import AuditLog
+from steward.policy.consent import ConsentDecision, ConsentGate, describe_call, redact
+from steward.policy.scopes import Scope, ScopeRegistry
 
 
 def _registry() -> ScopeRegistry:
@@ -58,7 +58,7 @@ async def test_internal_write_is_allowed_but_audited(tmp_path: Path) -> None:
 
 
 async def test_external_write_without_a_prompter_is_denied(tmp_path: Path) -> None:
-    """A one-shot `jarvis "block 2 hours"` has no TTY. It must refuse, not proceed."""
+    """A one-shot `steward "block 2 hours"` has no TTY. It must refuse, not proceed."""
     decision = await _gate(tmp_path / "a.jsonl").check("place_block", {"slot": 28})
 
     assert not decision.allowed
@@ -102,7 +102,7 @@ async def test_unknown_tool_is_denied_even_when_allowlisted(tmp_path: Path) -> N
 
 
 async def test_every_verdict_is_recorded_including_allows(tmp_path: Path) -> None:
-    """A log of denials alone cannot tell you what Jarvis did."""
+    """A log of denials alone cannot tell you what Steward did."""
     path = tmp_path / "a.jsonl"
     gate = _gate(path, prompter=_yes)
     await gate.check("recall_memory", {})

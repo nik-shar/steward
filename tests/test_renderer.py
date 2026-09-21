@@ -1,7 +1,7 @@
 """The renderer must never fail silently.
 
 A model call that fails has to be *visible*. The first live run of this system hit
-a 401 on the provider and printed **nothing at all** — which reads as "Jarvis had
+a 401 on the provider and printed **nothing at all** — which reads as "Steward had
 nothing to say", the single most misleading impression a tool-using agent can give.
 That bug is why this file exists.
 """
@@ -21,7 +21,7 @@ from tau_agent import (
 )
 from tau_ai import TextDeltaEvent
 
-from jarvis.events.render import TerminalRenderer
+from steward.events.render import TerminalRenderer
 
 
 def _renderer(**kwargs) -> tuple[TerminalRenderer, StringIO]:

@@ -22,20 +22,20 @@ from tau_ai.events import (
     ToolCallStartEvent,
 )
 
-from jarvis.config import Paths, ProviderSettings, Settings
-from jarvis.memory.dna import DnaMemory
-from jarvis.memory.store import MemoryStore
-from jarvis.packs import default_packs
-from jarvis.policy.audit import AuditLog
-from jarvis.policy.consent import ConsentGate
-from jarvis.policy.scopes import ScopeRegistry
-from jarvis.tools.registry import Mounted, mount
-from jarvis.tools.spec import ToolContext
+from steward.config import Paths, ProviderSettings, Settings
+from steward.memory.dna import DnaMemory
+from steward.memory.store import MemoryStore
+from steward.packs import default_packs
+from steward.policy.audit import AuditLog
+from steward.policy.consent import ConsentGate
+from steward.policy.scopes import ScopeRegistry
+from steward.tools.registry import Mounted, mount
+from steward.tools.spec import ToolContext
 
 
 @pytest.fixture
 def store(tmp_path: Path) -> Iterator[MemoryStore]:
-    instance = MemoryStore(tmp_path / "jarvis.db")
+    instance = MemoryStore(tmp_path / "steward.db")
     yield instance
     instance.close()
 
@@ -96,7 +96,7 @@ def settings_for(tmp_path: Path, *, allowlist: frozenset[str] = frozenset()) -> 
     """Settings pointed entirely at `tmp_path`, so no real data is ever touched."""
     paths = Paths(
         home=tmp_path,
-        db=tmp_path / "jarvis.db",
+        db=tmp_path / "steward.db",
         sessions=tmp_path / "sessions",
         audit=tmp_path / "audit.jsonl",
         vault=tmp_path / "vault",

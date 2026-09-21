@@ -4,24 +4,22 @@
 .env
 .env.*
 !.env.example
-
-# ---------------------------------------------------------------------------
-# Personal data.
-#
-# By default none of this is even inside the repo — it lives in ~/.jarvis/ so a
-# careless `git add -A` cannot publish your life. These patterns are the second
-# line of defence for when JARVIS_HOME is pointed inside the tree (useful when
-# working on the memory layer itself).
-# ---------------------------------------------------------------------------
 *.db
 *.db-wal
 *.db-shm
 *.sqlite
 *.sqlite3
-audit.jsonl
-sessions/
-memory/
-vault/
+# Data directories, anchored to the repo ROOT on purpose.
+#
+# These are the second line of defence for the case where STEWARD_HOME is pointed
+# inside the tree. They were unanchored once, and an unanchored `memory/` silently
+# swallowed the `steward/memory` package for the whole of M0 and M1 — so the memory
+# layer was never actually committed. A trailing slash without a leading slash
+# matches at any depth; do not drop the leading slashes.
+/audit.jsonl
+/sessions/
+/memory/
+/vault/
 
 # ---------------------------------------------------------------------------
 # Python

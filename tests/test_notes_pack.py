@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jarvis.packs.notes.tools import append_note, list_notes, read_note, search_notes
-from jarvis.policy.scopes import Scope
+from steward.packs.notes.tools import append_note, list_notes, read_note, search_notes
+from steward.policy.scopes import Scope
 
 NOTE = "Daily Notes/2026-09-24.md"
 

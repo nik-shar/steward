@@ -13,19 +13,19 @@ from __future__ import annotations
 
 from tau_ai import FakeProvider
 
-from jarvis.brain import Jarvis
+from steward.brain import Steward
 
 
 async def test_a_turn_streams_and_is_persisted(settings_factory, streams) -> None:
-    from jarvis.session import load_messages
+    from steward.session import load_messages
 
     provider = FakeProvider([streams.text("Morning. Nothing scheduled.")])
-    jarvis = Jarvis(settings_factory(), provider=provider, resume=False)
+    steward = Steward(settings_factory(), provider=provider, resume=False)
     try:
-        events = [event async for event in jarvis.ask("what's on today?")]
-        session_file = jarvis.session_file
+        events = [event async for event in steward.ask("what's on today?")]
+        session_file = steward.session_file
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert events, "the harness should have emitted events"
     assert session_file.is_file()
@@ -36,13 +36,15 @@ async def test_a_turn_streams_and_is_persisted(settings_factory, streams) -> Non
 
 
 async def test_the_turn_reaches_episodic_memory(settings_factory, streams) -> None:
-    jarvis = Jarvis(settings_factory(), provider=FakeProvider([streams.text("You are free after 2pm.")]), resume=False)
+    steward = Steward(
+        settings_factory(), provider=FakeProvider([streams.text("You are free after 2pm.")]), resume=False
+    )
     try:
-        async for _event in jarvis.ask("am I free?"):
+        async for _event in steward.ask("am I free?"):
             pass
-        rows = jarvis.store.query("SELECT kind, summary FROM episodic_events")
+        rows = steward.store.query("SELECT kind, summary FROM episodic_events")
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert len(rows) == 1
     assert rows[0]["kind"] == "turn"
@@ -52,16 +54,16 @@ async def test_the_turn_reaches_episodic_memory(settings_factory, streams) -> No
 async def test_the_identity_markdown_reaches_the_model(settings_factory, streams) -> None:
     """Identity is a file you can edit, so it must actually arrive in the prompt."""
     provider = FakeProvider([streams.text("hello")])
-    jarvis = Jarvis(settings_factory(), provider=provider, resume=False)
+    steward = Steward(settings_factory(), provider=provider, resume=False)
     try:
-        async for _event in jarvis.ask("hi"):
+        async for _event in steward.ask("hi"):
             pass
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     model, system, _messages, tools = provider.calls[0]
     assert model == "test-model"
-    assert "Jarvis" in system
+    assert "Steward" in system
     assert "Standing orders" in system  # guidelines.md made it in
     assert "Right now" in system  # so did the current date
     assert {tool.name for tool in tools} >= {"remember", "recall_memory", "delegate"}
@@ -74,14 +76,14 @@ async def test_a_tool_call_runs_and_mutates_memory(settings_factory, streams) ->
             streams.text("Noted."),
         ]
     )
-    jarvis = Jarvis(settings_factory(), provider=provider, resume=False)
+    steward = Steward(settings_factory(), provider=provider, resume=False)
     try:
-        async for _event in jarvis.ask("remember that I like mornings"):
+        async for _event in steward.ask("remember that I like mornings"):
             pass
-        count = jarvis.dna.count()
-        kinds = [record.kind for record in jarvis.audit.read()]
+        count = steward.dna.count()
+        kinds = [record.kind for record in steward.audit.read()]
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert count == 1
     assert "memory_write" in kinds
@@ -91,7 +93,7 @@ async def test_a_tool_call_runs_and_mutates_memory(settings_factory, streams) ->
 
 async def test_a_stored_memory_reaches_the_model_on_recall(settings_factory, streams) -> None:
     settings = settings_factory()
-    first = Jarvis(
+    first = Steward(
         settings,
         provider=FakeProvider(
             [streams.tool("remember", {"text": "Training for a half marathon"}), streams.text("Noted.")]
@@ -107,7 +109,7 @@ async def test_a_stored_memory_reaches_the_model_on_recall(settings_factory, str
     provider = FakeProvider(
         [streams.tool("recall_memory", {"query": "marathon"}), streams.text("You said a half marathon.")]
     )
-    second = Jarvis(settings, provider=provider, session_id=first.session_id)
+    second = Steward(settings, provider=provider, session_id=first.session_id)
     try:
         async for _event in second.ask("what am I training for?"):
             pass
@@ -121,14 +123,14 @@ async def test_a_stored_memory_reaches_the_model_on_recall(settings_factory, str
 
 async def test_a_session_resumes_with_its_history(settings_factory, streams) -> None:
     settings = settings_factory()
-    first = Jarvis(settings, provider=FakeProvider([streams.text("One.")]), resume=False)
+    first = Steward(settings, provider=FakeProvider([streams.text("One.")]), resume=False)
     try:
         async for _event in first.ask("first message"):
             pass
     finally:
         await first.aclose()
 
-    second = Jarvis(settings, provider=FakeProvider([streams.text("Two.")]), session_id=first.session_id)
+    second = Steward(settings, provider=FakeProvider([streams.text("Two.")]), session_id=first.session_id)
     try:
         prior = len(second.harness.messages)
     finally:
@@ -138,11 +140,11 @@ async def test_a_session_resumes_with_its_history(settings_factory, streams) -> 
 
 
 async def test_status_reports_the_wiring(settings_factory) -> None:
-    jarvis = Jarvis(settings_factory(), provider=FakeProvider([]), resume=False)
+    steward = Steward(settings_factory(), provider=FakeProvider([]), resume=False)
     try:
-        status = jarvis.status()
+        status = steward.status()
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert status["model"] == "test-model"
     assert status["packs"] == ["core", "calendar", "notes"]

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jarvis.packs.notes.tools import append_note, list_notes, read_note, search_notes
+from steward.packs.notes.tools import append_note, list_notes, read_note, search_notes
 
 
 def _vault(ctx) -> Path:

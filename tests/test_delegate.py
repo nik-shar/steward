@@ -15,8 +15,8 @@ from dataclasses import replace
 
 import pytest
 
-from jarvis.tools.delegate import SUBAGENTS, delegate_tool, register, roster
-from jarvis.tools.spec import SubagentSpec, ToolContext, ToolOutcome
+from steward.tools.delegate import SUBAGENTS, delegate_tool, register, roster
+from steward.tools.spec import SubagentSpec, ToolContext, ToolOutcome
 
 RESEARCHER = SubagentSpec(
     name="researcher",
@@ -81,7 +81,7 @@ async def test_missing_agent_is_refused(ctx: ToolContext) -> None:
 
 
 async def test_no_runner_is_reported_rather_than_faked(ctx: ToolContext) -> None:
-    """With no runner wired, jarvis must not invent a plausible result."""
+    """With no runner wired, steward must not invent a plausible result."""
     assert ctx.run_subagent is None
     outcome = await delegate_tool({"researcher": RESEARCHER}).handler(ctx, {"agent": "researcher", "task": "find x"})
 
@@ -127,7 +127,7 @@ async def test_delegation_is_audited_with_the_granted_tools(ctx: ToolContext) ->
 
 def test_delegate_does_not_write_so_it_does_not_prompt(mounted) -> None:
     """Dispatching is not a write. Any write inside the child is gated by the child."""
-    from jarvis.policy.scopes import Scope
+    from steward.policy.scopes import Scope
 
     assert mounted.scopes.scope_of("delegate") is Scope.READ
     assert not mounted.scopes.requires_consent("delegate", frozenset())

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from tau_ai import FakeProvider
 
-from jarvis.brain import Jarvis
+from steward.brain import Steward
 
 READ = {"day": "thursday", "window": "afternoon"}
 BOOK = {"day": "thursday", "start": "14:00", "minutes": 120, "label": "job application"}
@@ -47,14 +47,14 @@ def _context(provider: FakeProvider) -> str:
 
 async def test_the_scenario_books_the_time(settings_factory, streams) -> None:
     provider = _script(streams)
-    jarvis = Jarvis(settings_factory(), provider=provider, prompter=_allow, resume=False)
+    steward = Steward(settings_factory(), provider=provider, prompter=_allow, resume=False)
     try:
-        async for _event in jarvis.ask("am I free Thursday afternoon? If so block two hours."):
+        async for _event in steward.ask("am I free Thursday afternoon? If so block two hours."):
             pass
-        rows = jarvis.store.query("SELECT day, slot, label FROM day_slots ORDER BY slot")
-        records = jarvis.audit.read()
+        rows = steward.store.query("SELECT day, slot, label FROM day_slots ORDER BY slot")
+        records = steward.audit.read()
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     # Two hours on a half-hour grid is four slots.
     assert len(rows) == 4
@@ -69,12 +69,12 @@ async def test_the_scenario_books_the_time(settings_factory, streams) -> None:
 async def test_the_availability_read_reaches_the_model(settings_factory, streams) -> None:
     """The read has to inform the decision, or the model is booking blind."""
     provider = _script(streams)
-    jarvis = Jarvis(settings_factory(), provider=provider, prompter=_allow, resume=False)
+    steward = Steward(settings_factory(), provider=provider, prompter=_allow, resume=False)
     try:
-        async for _event in jarvis.ask("am I free Thursday afternoon?"):
+        async for _event in steward.ask("am I free Thursday afternoon?"):
             pass
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     context = _context(provider)
     assert "afternoon" in context
@@ -84,15 +84,15 @@ async def test_the_availability_read_reaches_the_model(settings_factory, streams
 async def test_a_declined_booking_writes_nothing(settings_factory, streams) -> None:
     """Declining must leave the calendar exactly as it was, and say so."""
     provider = _script(streams)
-    jarvis = Jarvis(settings_factory(), provider=provider, prompter=_deny, resume=False)
+    steward = Steward(settings_factory(), provider=provider, prompter=_deny, resume=False)
     try:
-        async for _event in jarvis.ask("am I free Thursday afternoon? If so block two hours."):
+        async for _event in steward.ask("am I free Thursday afternoon? If so block two hours."):
             pass
-        rows = jarvis.store.query("SELECT 1 FROM day_slots")
+        rows = steward.store.query("SELECT 1 FROM day_slots")
         context = _context(provider)
-        records = jarvis.audit.read()
+        records = steward.audit.read()
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     assert rows == []
     assert "declined by you" in context
@@ -103,11 +103,11 @@ async def test_a_declined_booking_writes_nothing(settings_factory, streams) -> N
 async def test_the_read_still_works_when_the_write_is_declined(settings_factory, streams) -> None:
     """Refusing a write must fail only the write, not the turn around it."""
     provider = _script(streams)
-    jarvis = Jarvis(settings_factory(), provider=provider, prompter=_deny, resume=False)
+    steward = Steward(settings_factory(), provider=provider, prompter=_deny, resume=False)
     try:
-        events = [event async for event in jarvis.ask("am I free Thursday afternoon?")]
+        events = [event async for event in steward.ask("am I free Thursday afternoon?")]
     finally:
-        await jarvis.aclose()
+        await steward.aclose()
 
     finished = [event for event in events if event.type == "tool_execution_end"]
     failed = {event.tool_name for event in finished if event.is_error}

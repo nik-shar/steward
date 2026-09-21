@@ -15,8 +15,8 @@ from datetime import date
 
 import pytest
 
-from jarvis.packs.calendar.grid import GridError, format_duration, format_time
-from jarvis.packs.calendar.when import parse_day, parse_duration, parse_time, parse_window
+from steward.packs.calendar.grid import GridError, format_duration, format_time
+from steward.packs.calendar.when import parse_day, parse_duration, parse_time, parse_window
 
 # A Thursday, so weekday arithmetic is unambiguous.
 TODAY = date(2026, 9, 24)

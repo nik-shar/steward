@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-PACKAGE = Path(__file__).resolve().parents[1] / "jarvis"
+PACKAGE = Path(__file__).resolve().parents[1] / "steward"
 
 #: The only modules allowed to reach Tau. Keep this list short and deliberate —
 #: adding to it should feel like a decision, because it is one.
@@ -55,7 +55,7 @@ def test_only_the_edge_imports_tau(path: Path) -> None:
     offenders = _tau_imports(path)
     assert not offenders, (
         f"{relative} imports {offenders}. Tau must stay confined to {sorted(TAU_FACING)} — "
-        "move the logic behind a jarvis type instead, or extend the adapter in brain.py."
+        "move the logic behind a steward type instead, or extend the adapter in brain.py."
     )
 
 

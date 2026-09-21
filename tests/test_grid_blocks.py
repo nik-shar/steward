@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from jarvis.packs.calendar import grid
-from jarvis.packs.calendar.grid import GridError
-from jarvis.packs.calendar.when import parse_time
+from steward.packs.calendar import grid
+from steward.packs.calendar.grid import GridError
+from steward.packs.calendar.when import parse_time
 
 
 @pytest.mark.parametrize(

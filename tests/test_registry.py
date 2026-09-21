@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import pytest
 
-from jarvis.packs import core_pack, default_packs
-from jarvis.policy.scopes import Scope, ScopeRegistryError
-from jarvis.tools.registry import CapabilityPack, MountError, mount
-from jarvis.tools.spec import ToolOutcome, ToolSpec
+from steward.packs import core_pack, default_packs
+from steward.policy.scopes import Scope, ScopeRegistryError
+from steward.tools.registry import CapabilityPack, MountError, mount
+from steward.tools.spec import ToolOutcome, ToolSpec
 
 
 async def _noop(ctx, arguments):  # pragma: no cover - never executed here
@@ -62,9 +62,9 @@ def test_default_packs_mount() -> None:
 
 
 def test_the_exact_set_of_world_writing_tools() -> None:
-    """An inventory of every capability that can change something outside Jarvis.
+    """An inventory of every capability that can change something outside Steward.
 
-    This is the test to read when you want to know what Jarvis is *allowed to do*.
+    This is the test to read when you want to know what Steward is *allowed to do*.
     Adding a write tool anywhere should fail here, loudly, and make whoever added it
     decide consciously that it needs consent.
     """
@@ -75,7 +75,7 @@ def test_the_exact_set_of_world_writing_tools() -> None:
 
 
 def test_core_alone_never_touches_the_outside_world() -> None:
-    """Core writes only to Jarvis's own memory, so mounting it alone prompts for nothing."""
+    """Core writes only to Steward's own memory, so mounting it alone prompts for nothing."""
     mounted = mount([core_pack()])
     assert mounted.scopes.writes() == []
 
@@ -127,7 +127,7 @@ def test_guidelines_are_concatenated_and_blank_ones_skipped() -> None:
 
 def test_growing_the_roster_updates_the_delegate_description() -> None:
     """The delegate tool must describe the roster it actually has."""
-    from jarvis.tools.spec import SubagentSpec
+    from steward.tools.spec import SubagentSpec
 
     without = mount([core_pack()]).tool_by_name()["delegate"]
     with_one = mount(
