@@ -145,3 +145,7 @@ wrong makes every write silently permitted. `tests/test_brain_gate.py` drives a
 WRITE tool through the real harness to prove the polarity, and
 `tests/test_tau_boundary.py` proves Tau stays confined to three files.
 
+---
+
+Personal project. Do whatever you want with it.
+
