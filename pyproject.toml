@@ -48,6 +48,9 @@ quote-style = "double"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+  "live: needs a real model provider and spends tokens; skipped unless STEWARD_LIVE=1",
+]
 
 [tool.mypy]
 python_version = "3.12"

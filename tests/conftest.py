@@ -7,6 +7,7 @@ tool layers never touch the harness, so they are testable in isolation.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -81,6 +82,20 @@ def ctx(store: MemoryStore, dna: DnaMemory, audit: AuditLog, mounted: Mounted) -
 
 def tool_by_name(mounted: Mounted, name: str):
     return mounted.tool_by_name()[name]
+
+
+# ---------------------------------------------------------------------------
+# Spending model budget
+# ---------------------------------------------------------------------------
+
+#: Marks a test that would call a real provider and cost money. `uv run pytest` skips
+#: these, so the default is free; run them deliberately with
+#: `STEWARD_LIVE=1 uv run pytest -m live`. `test_no_accidental_spend.py` enforces that
+#: anything carrying `@pytest.mark.live` also carries this.
+requires_live = pytest.mark.skipif(
+    os.environ.get("STEWARD_LIVE") != "1",
+    reason="needs a real provider and spends tokens; set STEWARD_LIVE=1 to allow it",
+)
 
 
 # ---------------------------------------------------------------------------
